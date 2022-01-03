@@ -12,6 +12,14 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+find_package(PCL REQUIRED)
+find_package(geometry_msgs REQUIRED)
+find_package(tf2_ros REQUIRED)
+
+include_directories(${PCL_INCLUDE_DIRS})
+link_directories(${PCL_LIBRARY_DIRS})
+add_definitions(${PCL_DEFINITIONS})
+
 add_executable(cartographer_node
   node_main.cc)
 target_include_directories(cartographer_node SYSTEM PUBLIC ${LUA_INCLUDE_DIR})
@@ -41,9 +49,29 @@ ament_target_dependencies(occupancy_grid_node
   "std_msgs"
 )
 
+google_binary(cartographer_pbstream_to_ros_map
+  SRCS
+    pbstream_to_ros_map_main.cc
+)
+
+add_executable(cartographer_pbstream_to_pcd
+  pbstream_to_pcd_main.cc)
+target_link_libraries(cartographer_pbstream_to_pcd ${PROJECT_NAME} ${PCL_LIBRARIES})
+
+add_executable(cartographer_pbstream_trajectory
+  pbstream_trajectory_main.cc)
+target_link_libraries(cartographer_pbstream_trajectory ${PROJECT_NAME})
+ament_target_dependencies(cartographer_pbstream_trajectory
+geometry_msgs
+tf2_ros
+)
+
 install(TARGETS
   cartographer_node
   occupancy_grid_node
+  cartographer_pbstream_to_ros_map
+  cartographer_pbstream_to_pcd
+  cartographer_pbstream_trajectory
   DESTINATION lib/${PROJECT_NAME})
 
 # google_binary(cartographer_assets_writer
